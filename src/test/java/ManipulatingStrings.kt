@@ -15,6 +15,10 @@ class ManipulatingStrings {
             assertEquals("OK", redis.set("best-team-in-premier-league", "Chelsea FC"))
             assertEquals("OK", redis.set("best-team-in-brasileirao", "CR Flamengo"))
             assertEquals("OK", redis.set("greatest-player-of-all-time", "Didier Drogba"))
+
+            redis.del("best-team-in-premier-league")
+            redis.del("best-team-in-brasileirao")
+            redis.del("greatest-player-of-all-time")
         }
     }
 
@@ -28,17 +32,29 @@ class ManipulatingStrings {
             assertEquals("Chelsea FC", redis.get("best-team-in-premier-league"))
             assertEquals("CR Flamengo", redis.get("best-team-in-brasileirao"))
             assertEquals("Didier Drogba", redis.get("greatest-player-of-all-time"))
+
+            redis.del("best-team-in-premier-league")
+            redis.del("best-team-in-brasileirao")
+            redis.del("greatest-player-of-all-time")
         }
     }
 
     @Test
     fun checkingIfTheseKeysExistInRedis() {
         connection.getResource().use { redis ->
+            redis.set("best-team-in-premier-league", "Chelsea FC")
+            redis.set("best-team-in-brasileirao", "CR Flamengo")
+            redis.set("greatest-player-of-all-time", "Didier Drogba")
+
             assertTrue(redis.exists("best-team-in-premier-league"))
             assertTrue(redis.exists("best-team-in-brasileirao"))
             assertTrue(redis.exists("greatest-player-of-all-time"))
             assertFalse(redis.exists("best-team-in-la-liga"))
             assertFalse(redis.exists("best-team-in-ligue-1"))
+
+            redis.del("best-team-in-premier-league")
+            redis.del("best-team-in-brasileirao")
+            redis.del("greatest-player-of-all-time")
         }
     }
 
@@ -56,6 +72,12 @@ class ManipulatingStrings {
             assertTrue(redis.del("best-team-in-the-premier-league") == 0L)
             assertTrue(redis.del("best-team-in-the-brasileirao") == 0L)
             assertTrue(redis.del("best-team-in-the-la-liga") == 0L)
+
+            redis.del(
+                "best-team-in-the-premier-league",
+                "best-team-in-the-brasileirao",
+                "best-team-in-the-la-liga",
+            )
         }
     }
 
@@ -69,6 +91,8 @@ class ManipulatingStrings {
 
             assertTrue(redis.exists("key-with-2s-of-duration"))
             assertFalse(redis.exists("key-with-2ms-of-duration"))
+
+            redis.del("key-with-2s-of-duration", "key-with-2ms-of-duration")
         }
     }
 
@@ -80,6 +104,22 @@ class ManipulatingStrings {
 
             assertTrue(redis.ttl("key-with-5s-of-duration") > 0)
             assertTrue(redis.ttl("key-with-5000ms-of-duration") > 0)
+
+            redis.del("key-with-5s-of-duration", "key-with-5000ms-of-duration")
+        }
+    }
+
+    @Test
+    fun verifyingObjectEncodingForValues() {
+        connection.getResource().use { redis ->
+            redis.set("random-word", "test")
+            redis.set("random-integer", "95")
+
+            assertEquals("embstr", redis.objectEncoding("random-word"))
+            assertEquals("int", redis.objectEncoding("random-integer"))
+
+            redis.del("random-word")
+            redis.del("random-integer")
         }
     }
 
@@ -93,6 +133,8 @@ class ManipulatingStrings {
             redis.persist("key-with-5s-of-duration")
 
             assertEquals(-1L, redis.ttl("key-with-5s-of-duration"))
+
+            redis.del("key-with-5s-of-duration")
         }
     }
 
@@ -107,6 +149,8 @@ class ManipulatingStrings {
 
             assertEquals("3", redis.get("titles-of-champions-league-of-Chelsea"))
             assertEquals("0", redis.get("titles-of-champions-league-of-PSG"))
+
+            redis.del("titles-of-champions-league-of-Chelsea", "titles-of-champions-league-of-PSG")
         }
     }
 }
